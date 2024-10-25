@@ -274,7 +274,6 @@ pub async fn get_chats(conn: DbConn, cookies: &CookieJar<'_>) -> Result<Template
             .await
             .map_err(|_| Status::InternalServerError)?;
 
-        // Prepare the context for the template
         let mut context = HashMap::new();
         context.insert("chats", chats_list);
 
