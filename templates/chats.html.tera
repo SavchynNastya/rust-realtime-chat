@@ -1,0 +1,33 @@
+{% extends "base" %}
+
+{% block title %}Chats List{% endblock %}
+
+{% block content %}
+<h2>Chats List</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Chat ID</th>
+            <th>User 1</th>
+            <th>User 2</th>
+            <th>Created At</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for chat in chats %}
+        <tr>
+            <td>{{ chat.id }}</td>
+            <td>{{ chat.user1_username }}</td>
+            <td>{{ chat.user2_username }}</td>
+            <td>{{ chat.created_at }}</td>
+            <td><a href="{{ chat.chat_url }}">Go to Chat {{ chat.id }}</a></td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4">No chats found</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="/create_chat" class="btn btn-primary">Create Chat</a>
+{% endblock %}

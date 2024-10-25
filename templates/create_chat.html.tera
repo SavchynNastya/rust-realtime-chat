@@ -1,0 +1,54 @@
+{% extends "base" %}
+
+{% block title %}Create Chat{% endblock %}
+
+{% block content %}
+<h2>Create a New Chat</h2>
+
+{% if message %}
+    <div class="alert alert-info">{{ message }}</div>
+{% endif %}
+<form action="/create_chat" method="post">
+    <input type="hidden" name="authenticity_token" value="{{ csrf_token }}">
+
+    <div class="form-group">
+        <label for="form_user1_id">Select User 1:</label>
+        <select id="form_user1_id" name="form_user1_id" class="form-control" required onchange="updateUser2Options()">
+            <option value="" disabled selected>Select User</option>
+            {% for user in users %}
+                <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="form_user2_id">Select User 2:</label>
+        <select id="form_user2_id" name="form_user2_id" class="form-control" required>
+            <option value="" disabled selected>Select User</option>
+            {% for user in users %}
+                <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Chat</button>
+</form>
+
+<script>
+function updateUser2Options() {
+    const user1Id = document.getElementById('form_user1_id').value;
+    const user2Select = document.getElementById('form_user2_id');
+
+    for (let i = 0; i < user2Select.options.length; i++) {
+        user2Select.options[i].style.display = '';
+    }
+
+    for (let i = 0; i < user2Select.options.length; i++) {
+        if (user2Select.options[i].value === user1Id) {
+            user2Select.options[i].style.display = 'none';
+        }
+    }
+}
+</script>
+
+{% endblock %}

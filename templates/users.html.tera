@@ -1,0 +1,30 @@
+{% extends "base" %}
+
+{% block title %}Users List{% endblock %}
+
+{% block content %}
+<h2>Users List</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Created At</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="3">No users found</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="/create_chat" class="btn btn-primary">Create Chat</a>
+{% endblock %}
