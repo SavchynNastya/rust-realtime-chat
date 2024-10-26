@@ -1,0 +1,60 @@
+{% extends "base" %}
+
+{% block title %}Chat Session{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Chat Room: {{ chat_id }}</h2>
+    <div id="chat-box" class="border rounded p-3 mb-3" style="height: 400px; overflow-y: scroll;">
+        <!-- Messages will be displayed here -->
+    </div>
+    <div class="input-group">
+        <input type="text" id="message-input" class="form-control" placeholder="Type your message..." aria-label="Type your message...">
+        <button id="send-btn" class="btn btn-primary">Send</button>
+    </div>
+</div>
+
+<script>
+    console.log("{{ user.username }} has joined the chat room.");
+    const chatId = "{{ chat_id }}";
+    const socket = new WebSocket("ws://127.0.0.1:9001");
+
+    socket.onopen = () => {
+        console.log("Connected to WebSocket chat room: " + chatId);
+    };
+
+    socket.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        console.log("New message received:", msg);  // Log every new message
+
+        const chatBox = document.getElementById("chat-box");
+        chatBox.innerHTML += "<p><strong>" + msg.username + ":</strong> " + msg.message + "</p>";
+        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
+    };
+
+    socket.onclose = () => {
+        console.log("Disconnected from WebSocket chat room.");
+    };
+
+    socket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+    };
+
+    document.getElementById("send-btn").addEventListener("click", () => {
+        const input = document.getElementById("message-input");
+        const message = input.value;
+        if (message.trim() !== "") {
+            console.log("Sending message:", message);  // Log when sending a message
+            socket.send(JSON.stringify({ command: "new_message", message: message }));
+            input.value = ""; // Clear the input field
+        }
+    });
+
+    // Handle Enter key to send messages
+    document.getElementById("message-input").addEventListener("keypress", (event) => {
+        if (event.key === "Enter") {
+            document.getElementById("send-btn").click();
+        }
+    });
+</script>
+{% endblock %}
