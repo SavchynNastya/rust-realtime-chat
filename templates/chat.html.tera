@@ -15,8 +15,9 @@
 </div>
 
 <script>
-    console.log("{{ user.username }} has joined the chat room.");
+    const username = "{{ user.username }}";  // Use the actual username of the logged-in user
     const chatId = "{{ chat_id }}";
+    const userId = "{{ user.id }}";
     const socket = new WebSocket("ws://127.0.0.1:9001");
 
     socket.onopen = () => {
@@ -25,36 +26,29 @@
 
     socket.onmessage = (event) => {
         const msg = JSON.parse(event.data);
-        console.log("New message received:", msg);  // Log every new message
+        console.log("New message received:", msg);
 
         const chatBox = document.getElementById("chat-box");
         chatBox.innerHTML += "<p><strong>" + msg.username + ":</strong> " + msg.message + "</p>";
-        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
-    };
-
-    socket.onclose = () => {
-        console.log("Disconnected from WebSocket chat room.");
-    };
-
-    socket.onerror = (error) => {
-        console.error("WebSocket error:", error);
+        chatBox.scrollTop = chatBox.scrollHeight;
     };
 
     document.getElementById("send-btn").addEventListener("click", () => {
         const input = document.getElementById("message-input");
-        const message = input.value;
-        if (message.trim() !== "") {
-            console.log("Sending message:", message);  // Log when sending a message
-            socket.send(JSON.stringify({ command: "new_message", message: message }));
-            input.value = ""; // Clear the input field
-        }
-    });
+            const message = input.value;
+            const parsedUserId = parseInt(userId, 10);
+            const parsedChatId = parseInt(chatId, 10);
 
-    // Handle Enter key to send messages
-    document.getElementById("message-input").addEventListener("keypress", (event) => {
-        if (event.key === "Enter") {
-            document.getElementById("send-btn").click();
-        }
+            if (message.trim() !== "" && !isNaN(parsedUserId) && !isNaN(parsedChatId)) {
+                const outgoingMessage = JSON.stringify({
+                    username: username,
+                    message: message,
+                    user_id: parsedUserId,
+                    chat_id: parsedChatId
+                });
+                socket.send(outgoingMessage);
+                input.value = "";
+            }
     });
 </script>
 {% endblock %}

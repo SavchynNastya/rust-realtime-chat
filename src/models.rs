@@ -19,7 +19,6 @@ pub struct Chat {
     pub id: Option<i32>,
     pub user1_id: i32,
     pub user2_id: i32,
-    // pub created_at: String,
     pub created_at: Option<NaiveDateTime>,
 }
 
@@ -47,7 +46,6 @@ pub struct Message {
 pub struct NewUser {
     pub username: String,
     pub hashed_password: String,
-    // pub created_at: Option<NaiveDateTime>,
 }
 
 #[derive(Insertable, Serialize, Deserialize)]
@@ -60,7 +58,7 @@ pub struct NewChat {
 #[derive(Insertable, Serialize, Deserialize)]
 #[table_name = "messages"]
 pub struct NewMessage {
-    pub chat_id: i32,  // Added chat_id field
+    pub chat_id: i32,
     pub user_id: i32,
     pub content: Option<String>,
 }

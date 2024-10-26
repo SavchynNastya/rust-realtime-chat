@@ -1,6 +1,9 @@
-#[macro_use] extern crate rocket;
-#[macro_use] extern crate diesel;
-#[macro_use] extern crate rocket_sync_db_pools;
+#[macro_use]
+extern crate rocket;
+#[macro_use]
+extern crate diesel;
+#[macro_use]
+extern crate rocket_sync_db_pools;
 
 use std::sync::{Arc};
 use tokio::sync::Mutex;
@@ -8,10 +11,8 @@ use rocket_csrf_token::{CsrfConfig, Fairing};
 use dotenv::dotenv;
 use rocket::{Build, Rocket};
 use rocket_dyn_templates::Template;
-use tokio::sync::broadcast::channel;
 use tokio::{net::TcpListener, task};
 use tokio_tungstenite::accept_async;
-use crate::websockets::ChatMessage;
 
 mod db;
 mod schema;
@@ -22,7 +23,7 @@ mod messages;
 mod files;
 mod fairing;
 
-fn rocket(messages_db: Arc<Mutex<Vec<String>>>) -> Rocket<Build> {
+fn rocket() -> Rocket<Build> {
     dotenv().ok();
 
     rocket::build()
@@ -30,7 +31,6 @@ fn rocket(messages_db: Arc<Mutex<Vec<String>>>) -> Rocket<Build> {
         .attach(Template::fairing())
         .attach(Fairing::new(CsrfConfig::default()))
         .manage(Arc::new(Mutex::new(Vec::<String>::new())))
-        .manage(channel::<Arc<ChatMessage>>(100).0)
         .mount("/", routes![
             auth::register_form,
             auth::register,
@@ -42,48 +42,9 @@ fn rocket(messages_db: Arc<Mutex<Vec<String>>>) -> Rocket<Build> {
             messages::create_chat,
             messages::users_list,
             messages::get_chats,
-            // websockets::chat,
-            websockets::events,
         ])
         .mount("/media", rocket::fs::FileServer::from("media"))
-    // .mount("/static", rocket::fs::FileServer::from("static"))
 }
-
-// #[tokio::main]
-// async fn main() {
-//     use tokio::sync::Mutex;
-//     let messages_db = Arc::new(Mutex::new(Vec::new()));
-//     let rocket_instance = rocket(Arc::clone(&messages_db));
-//
-//     let ws_listener = TcpListener::bind("127.0.0.1:9001")
-//         .await
-//         .expect("Failed to bind WebSocket server");
-//
-//     tokio::spawn(async move {
-//         loop {
-//             match ws_listener.accept().await {
-//                 Ok((stream, _)) => {
-//                     let messages_db_clone = Arc::clone(&messages_db);
-//                     tokio::spawn(async move {
-//                         let websocket = accept_async(stream)
-//                             .await
-//                             .expect("Error during WebSocket handshake");
-//
-//                         websockets::handle_websocket(
-//                             websocket,
-//                             messages_db_clone,
-//                         ).await;
-//                     });
-//                 }
-//                 Err(e) => {
-//                     eprintln!("Error accepting connection: {}", e);
-//                 }
-//             }
-//         }
-//     });
-//
-//     rocket_instance.launch().await.expect("Failed to launch Rocket");
-// }
 
 #[tokio::main]
 async fn main() {
@@ -91,7 +52,7 @@ async fn main() {
     let messages_db = Arc::new(Mutex::new(Vec::new()));
     let connected_clients = Arc::new(Mutex::new(Vec::new()));
 
-    let rocket_instance = rocket(Arc::clone(&messages_db));
+    let rocket_instance = rocket();
 
     let ws_listener = TcpListener::bind("127.0.0.1:9001")
         .await
@@ -112,7 +73,7 @@ async fn main() {
                         websockets::handle_websocket(
                             websocket,
                             messages_db_clone,
-                            connected_clients_clone
+                            connected_clients_clone,
                         ).await;
                     });
                 }
@@ -125,4 +86,3 @@ async fn main() {
 
     rocket_instance.launch().await.expect("Failed to launch Rocket");
 }
-
