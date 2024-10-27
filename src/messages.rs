@@ -147,14 +147,19 @@ pub async fn create_chat(
 pub async fn get_chats(conn: DbConn, cookies: &CookieJar<'_>, auth_user: AuthenticatedUser) -> Result<Template, Status> {
     use diesel::prelude::*;
 
-    if let Some(_user_id) = cookies.get_private("user_id") {
+    if let Some(user_id_cookie) = cookies.get_private("user_id") {
+        let user_id: i32 = user_id_cookie.value().parse().map_err(|_| Status::Unauthorized)?;
+
         let (user1_alias, user2_alias) = diesel::alias!(users as user1_alias, users as user2_alias);
 
         let chats_list = conn
             .run(move |c| {
                 chats::table
-                    .inner_join(user1_alias.on(user1_alias.field(users::id).nullable().eq(chats::user1_id.nullable())))
-                    .inner_join(user2_alias.on(user2_alias.field(users::id).nullable().eq(chats::user2_id.nullable())))
+                    .inner_join(user1_alias.on(user1_alias.field(users::id).eq(chats::user1_id.nullable())))
+                    .inner_join(user2_alias.on(user2_alias.field(users::id).eq(chats::user2_id.nullable())))
+                    .filter(
+                        chats::user1_id.eq(user_id).or(chats::user2_id.eq(user_id))
+                    )
                     .select((
                         chats::id.nullable(),
                         user1_alias.field(users::username),
@@ -194,6 +199,8 @@ pub async fn get_chats(conn: DbConn, cookies: &CookieJar<'_>, auth_user: Authent
         Err(Status::Unauthorized)
     }
 }
+
+
 
 #[get("/users")]
 pub async fn users_list(conn: DbConn, auth_user: AuthenticatedUser) -> Result<Template, Status> {
