@@ -20,7 +20,6 @@ mod models;
 mod auth;
 mod websockets;
 mod messages;
-mod files;
 mod fairing;
 
 fn rocket() -> Rocket<Build> {

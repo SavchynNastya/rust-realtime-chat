@@ -15,7 +15,7 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
 
     async fn from_request(request: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
         let cookies = request.cookies();
-        let db = request.guard::<DbConn>().await.unwrap(); // отримуємо підключення до бази даних
+        let db = request.guard::<DbConn>().await.unwrap();
 
         if let Some(user_cookie) = cookies.get_private("user_id") {
             let user_id: i32 = user_cookie.value().parse().unwrap_or_default();
